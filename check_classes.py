@@ -1,23 +1,26 @@
+# check_classes.py
 import requests
 from bs4 import BeautifulSoup
 import re
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
-def parse_classrooms(html_content):
+def parse_classrooms(html_content) -> set[tuple]:
     """Извлечь из страницы расписания пары на сегодня"""
 
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    classrooms = []
-    
+    classrooms: set[tuple] = set()
+
     today_table = soup.find('table', {'id': 'today'})
 
     if not today_table or today_table.find('h5', string=re.compile('Занятия отсутствуют')):
-        return []
-    
+        return set()
+
     # Ищем все строки с занятиями (не пустые)
     slots = today_table.find_all('tr', class_=lambda x: x and 'slot' in x and 'load-empty' not in x)
-    
+
     for slot in slots:
         # Ищем ссылку с информацией о занятии
         time_td = slot.find('td', style="width: 84px")
@@ -31,33 +34,58 @@ def parse_classrooms(html_content):
             pair_number = lines[0].split()[0]
         else:
             print('номер пары не определен:', lines)
-        
+
         link = slot.find('a', class_='task')
         if link:
             # Получаем текст ссылки
             text = link.get_text(separator='\n', strip=True)
-            
+
             # Ищем корпус и кабинет с помощью регулярного выражения
             # Формат: "X корпус - YYY" или "X корпус - YYY, пл. Основная"
             match = re.search(r'(\d+)\s+корпус\s*-\s*(\d+)', text)
             if match:
                 building = match.group(1)
                 room = match.group(2)
-                classrooms.append((
+                classrooms.add(tuple(map(int, (
                     pair_number, # какая пара по счету
                     building,    # корпус
                     room,        # кабинет
-                ))
+                ))))
             else:
                 print("странный формат кабинета:", text)
-    
+
     return classrooms
+
+
+def create_session_with_retries():
+    """Создать сессию с повторными попытками при ошибках"""
+    session = requests.Session()
+
+    # Настройка повторных попыток
+    retry_strategy = Retry(
+        total=5,  # максимальное количество попыток
+        backoff_factor=2,  # фактор задержки между попытками
+        status_forcelist=[429, 500, 502, 503, 504],  # коды для повторных попыток
+        allowed_methods=["HEAD", "GET", "OPTIONS"]  # методы для повторных попыток
+    )
+
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
+        'Accept': 'text/html, */*; q=0.01',
+        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+    })
+
+    return session
 
 
 def get_today_teachers_rasp(teacher):
     """Получить сегодняшние пары преподавателя"""
 
-    session = requests.Session()
+    session = create_session_with_retries()
 
     session.headers.update({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
@@ -67,12 +95,14 @@ def get_today_teachers_rasp(teacher):
 
     try:
         # Сначала заходим на главную страницу (чтобы получить cookies)
+        '''
         main_response = session.get(
             'https://rasp.rea.ru/',
-            verify=False,   # отключаем проверку SSL
-            timeout=10
+            timeout=15
         )
         main_response.raise_for_status()
+        '''
+
 
         # Затем делаем нужный запрос
         params = {
@@ -85,17 +115,20 @@ def get_today_teachers_rasp(teacher):
             'https://rasp.rea.ru/Schedule/ScheduleCard',
             params=params,
             headers={'X-Requested-With': 'XMLHttpRequest'},
-            verify=False,  # отключаем проверку SSL
-            timeout=10
+            timeout=15
         )
 
         if response.status_code == 200:
             html_content = response.text
             classrooms = parse_classrooms(html_content)
+            if classrooms != set():
+                print("успех")
+            else:
+                print("пусто")
             return classrooms
         else:
             print(f'Ошибка: {response.status_code}')
-        
+
     except requests.exceptions.SSLError as e:
         print(f"SSL ошибка при подключении: {e}")
         return []
