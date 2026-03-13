@@ -4,6 +4,19 @@ with open('today_pairs_list_13.03.2026.txt', 'r') as f:
     print(len(pair_list))
 
 
+from datetime import datetime
+
+# Получаем сегодняшнюю дату в формате ГГГГ-ММ-ДД
+today = datetime.now().strftime("%d.%m.%Y")
+filename = f'today_pairs_list_{today}.txt'
+
+with open(filename, 'w', encoding='utf-8') as f:
+    f.write('hello where')
+
+print(f"Файл сохранен как: {filename}")
+
+
+'''
 all_classes = set()
 
 for pair in pair_list:
@@ -11,6 +24,7 @@ for pair in pair_list:
 
 with open('all_classes.txt', 'w') as f:
     f.write(str(all_classes))
+'''
 
 '''
 with open('today_pairs_list.txt', 'w', encoding='utf-8') as f:
