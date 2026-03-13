@@ -42,15 +42,15 @@ def parse_classrooms(html_content) -> set[tuple]:
 
             # Ищем корпус и кабинет с помощью регулярного выражения
             # Формат: "X корпус - YYY" или "X корпус - YYY, пл. Основная"
-            match = re.search(r'(\d+)\s+корпус\s*-\s*(\d+)', text)
+            match = re.search(r'(\d+)\s+корпус\s*-\s*([\d./]+)', text)
             if match:
                 building = match.group(1)
                 room = match.group(2)
-                classrooms.add(tuple(map(int, (
-                    pair_number, # какая пара по счету
-                    building,    # корпус
+                classrooms.add((
+                    int(pair_number), # какая пара по счету
+                    int(building),    # корпус
                     room,        # кабинет
-                ))))
+                ))
             else:
                 print("странный формат кабинета:", text)
 

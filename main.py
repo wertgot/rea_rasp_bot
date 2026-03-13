@@ -7,7 +7,7 @@ with open('teacher_list.txt', 'r', encoding='utf-8') as f:
 
 occupied_classes = set()
 
-for teacher in teacher_list[:20]:
+for teacher in teacher_list:
     teacher_rasp = get_today_teachers_rasp(teacher)
     occupied_classes = occupied_classes.union(set(teacher_rasp))
 occupied_classes = list(occupied_classes)
