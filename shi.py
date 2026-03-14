@@ -1,8 +1,8 @@
 
-with open('today_pairs_list.txt', 'r') as f:
+with open('today_pairs_list.txt', 'r', encoding='utf-8') as f:
     pair_list = eval(f.read())
     print('всего пар', len(pair_list))
-    print(pair_list[:10])
+    print(pair_list[:5])
 
 
 
@@ -10,7 +10,7 @@ with open('today_pairs_list.txt', 'r') as f:
 all_classes_today = set()
 
 for pair in pair_list:
-    all_classes_today.add((pair[1:]))
+    all_classes_today.add((pair[2:]))
 
 with open('all_classes.txt', 'r') as f:
     all_classes = eval(f.read())

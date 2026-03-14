@@ -6,7 +6,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
-def parse_classrooms(html_content) -> set[tuple]:
+def parse_classrooms(html_content, teacher) -> set[tuple]:
     """Извлечь из страницы расписания пары на сегодня"""
 
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -47,6 +47,7 @@ def parse_classrooms(html_content) -> set[tuple]:
                 building = match.group(1)
                 room = match.group(2)
                 classrooms.add((
+                    teacher,
                     int(pair_number), # какая пара по счету
                     int(building),    # корпус
                     room,        # кабинет
@@ -120,7 +121,7 @@ def get_today_teachers_rasp(teacher):
 
         if response.status_code == 200:
             html_content = response.text
-            classrooms = parse_classrooms(html_content)
+            classrooms = parse_classrooms(html_content, teacher)
             if classrooms != set():
                 print("успех")
             else:
