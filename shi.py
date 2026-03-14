@@ -4,7 +4,29 @@ with open('today_pairs_list.txt', 'r', encoding='utf-8') as f:
     print('всего пар', len(pair_list))
     print(pair_list[:5])
 
+with open('all_classes.txt', 'r', encoding='utf-8') as f:
+    all_classes = eval(f.read())
 
+def vacant_classes(all_classes, pair_list, pair_num, pair_corp):
+    pairs = set()
+    for pair in pair_list:
+        if pair[1] == pair_num and pair[2] == pair_corp:
+            pairs.add(tuple(pair[2:]))
+
+    classes = set()
+    for clas in all_classes:
+        if clas[0] == pair_corp:
+            classes.add(clas)
+    
+    v_cls = list(classes - pairs)
+    v_cls.sort(key=lambda x: x[-1])
+    return v_cls
+
+rooms1 = vacant_classes(all_classes, pair_list, pair_num=2, pair_corp=3)
+rooms2 = vacant_classes(all_classes, pair_list, pair_num=3, pair_corp=3)
+for room in rooms1:
+    if room in rooms2:
+        print(room)
 
 '''
 all_classes_today = set()
