@@ -1,35 +1,31 @@
 
-with open('today_pairs_list_13.03.2026.txt', 'r') as f:
+with open('today_pairs_list.txt', 'r') as f:
     pair_list = eval(f.read())
-    print(len(pair_list))
+    print('всего пар', len(pair_list))
+    print(pair_list[:10])
 
-
-from datetime import datetime
-
-# Получаем сегодняшнюю дату в формате ГГГГ-ММ-ДД
-today = datetime.now().strftime("%d.%m.%Y")
-filename = f'today_pairs_list_{today}.txt'
-
-with open(filename, 'w', encoding='utf-8') as f:
-    f.write('hello where')
-
-print(f"Файл сохранен как: {filename}")
 
 
 '''
-all_classes = set()
+all_classes_today = set()
 
 for pair in pair_list:
-    all_classes.add((pair[1:]))
+    all_classes_today.add((pair[1:]))
+
+with open('all_classes.txt', 'r') as f:
+    all_classes = eval(f.read())
+
+print(f'all_classes_today: {len(all_classes_today)}')
+print(f'all_classes: {len(all_classes)}')
+
+all_classes = all_classes.union(all_classes_today)
+
+print(f'all_classes now: {len(all_classes)}')
 
 with open('all_classes.txt', 'w') as f:
     f.write(str(all_classes))
 '''
 
-'''
-with open('today_pairs_list.txt', 'w', encoding='utf-8') as f:
-    f.write(str(list(set(pair_list))))
-'''
 
 '''
 pairs_together = {}

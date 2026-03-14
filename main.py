@@ -18,3 +18,5 @@ today = datetime.now().strftime("%d.%m.%Y")
 filename = f'today_pairs_list_{today}.txt'
 with open(filename, 'w', encoding='utf-8') as f:
     f.write(str(occupied_classes))
+with open('today_pairs_list.txt', 'w', encoding='utf-8') as f:
+    f.write(str(occupied_classes))
