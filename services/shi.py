@@ -1,10 +1,10 @@
 
-with open('today_pairs_list.txt', 'r', encoding='utf-8') as f:
+with open('database/today_pairs_list.txt', 'r', encoding='utf-8') as f:
     pair_list = eval(f.read())
     print('всего пар', len(pair_list))
     print(pair_list[:5])
 
-with open('all_classes.txt', 'r', encoding='utf-8') as f:
+with open('database/all_classes.txt', 'r', encoding='utf-8') as f:
     all_classes = eval(f.read())
 
 def vacant_classes(all_classes, pair_list, pair_num, pair_corp):
@@ -17,7 +17,7 @@ def vacant_classes(all_classes, pair_list, pair_num, pair_corp):
     for clas in all_classes:
         if clas[0] == pair_corp:
             classes.add(clas)
-    
+
     v_cls = list(classes - pairs)
     v_cls.sort(key=lambda x: x[-1])
     return v_cls

@@ -11,7 +11,7 @@ def get_departments() -> list[str]:
         }
         url="https://rasp.rea.ru/"
         response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Проверка на ошибки HTTP
+        response.raise_for_status()
         response.encoding = 'utf-8'
 
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -25,12 +25,12 @@ def get_departments() -> list[str]:
         departments = []
         options = cathedra_select.find_all('option')
         for option in options:
-            value = option.get('value')
+            value = str(option.get('value'))
             # Пропускаем служебную опцию "-кафедра-"
             if value and value != 'na' and value.strip():
                 # названия кафедр находятся в атрибуте value
                 departments.append(value.lower())
-        return departments  
+        return departments
 
     except requests.exceptions.RequestException as e:
         print(f"Ошибка при запросе к сайту: {e}")
@@ -58,6 +58,7 @@ def get_teachers_from_department(dep):
         "x-requested-with": "XMLHttpRequest"
     }
 
+    html_content = ""
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
         response.encoding = 'utf-8'
@@ -67,25 +68,25 @@ def get_teachers_from_department(dep):
         print(f"Error: {e}")
     except UnicodeEncodeError as e:
         print(f"Encoding error: {e}")
-    
+
     soup = BeautifulSoup(html_content, 'html.parser')
 
     # находим все ФИО преповавателей
     teachers = []
     for name_link in soup.select('td:nth-of-type(2) a.search-link'):
         teachers.append(name_link.text.strip().lower())
-    
+
     return teachers
 
 
 if __name__ == "__main__":
+    # собираем список всех преподавателей
     deps = get_departments()
     teacher_list = set()
     for dep in deps:
         teachers = get_teachers_from_department(dep)
         for teacher in teachers:
             teacher_list.add(teacher)
-    teacher_list = list(teacher_list)
     print(f"Всего прероподавателей: {len(teacher_list)}")
 
     with open("teacher_list.txt", 'w', encoding='utf-8') as f:

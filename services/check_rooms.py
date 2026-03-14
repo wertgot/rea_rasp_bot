@@ -1,4 +1,3 @@
-# check_classes.py
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -6,20 +5,24 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
-def parse_classrooms(html_content, teacher) -> set[tuple]:
+def parse_rooms(html_content, teacher) -> set[tuple]:
     """Извлечь из страницы расписания пары на сегодня"""
 
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    classrooms: set[tuple] = set()
+    rooms: set[tuple] = set()
 
     today_table = soup.find('table', {'id': 'today'})
+    if not today_table:
+        print('no table')
+        return set()
 
-    if not today_table or today_table.find('h5', string=re.compile('Занятия отсутствуют')):
+    is_empty = today_table.find('h5', string=re.compile('Занятия отсутствуют'))  # type: ignore
+    if is_empty:
         return set()
 
     # Ищем все строки с занятиями (не пустые)
-    slots = today_table.find_all('tr', class_=lambda x: x and 'slot' in x and 'load-empty' not in x)
+    slots = today_table.select('tr.slot:not(.load-empty)')
 
     for slot in slots:
         # Ищем ссылку с информацией о занятии
@@ -28,10 +31,12 @@ def parse_classrooms(html_content, teacher) -> set[tuple]:
             time_text = time_td.get_text(separator='\n', strip=True)
         else:
             print('ссылка с информацией о занятии не найдена')
+            continue
         # Парсим номер пары
+        pair_number = "0"
         lines = time_text.split('\n')
         if lines:
-            pair_number = lines[0].split()[0]
+            pair_number =lines[0].split()[0]
         else:
             print('номер пары не определен:', lines)
 
@@ -46,7 +51,7 @@ def parse_classrooms(html_content, teacher) -> set[tuple]:
             if match:
                 building = match.group(1)
                 room = match.group(2)
-                classrooms.add((
+                rooms.add((
                     teacher,
                     int(pair_number), # какая пара по счету
                     int(building),    # корпус
@@ -55,11 +60,12 @@ def parse_classrooms(html_content, teacher) -> set[tuple]:
             else:
                 print("странный формат кабинета:", text)
 
-    return classrooms
+    return rooms
 
 
-def create_session_with_retries():
+def create_session_with_retries() -> requests.Session:
     """Создать сессию с повторными попытками при ошибках"""
+
     session = requests.Session()
 
     # Настройка повторных попыток
@@ -83,7 +89,7 @@ def create_session_with_retries():
     return session
 
 
-def get_today_teachers_rasp(teacher):
+def get_today_teachers_schedule(teacher) -> set[tuple]:
     """Получить сегодняшние пары преподавателя"""
 
     session = create_session_with_retries()
@@ -95,17 +101,6 @@ def get_today_teachers_rasp(teacher):
     })
 
     try:
-        # Сначала заходим на главную страницу (чтобы получить cookies)
-        '''
-        main_response = session.get(
-            'https://rasp.rea.ru/',
-            timeout=15
-        )
-        main_response.raise_for_status()
-        '''
-
-
-        # Затем делаем нужный запрос
         params = {
             'selection': teacher,
             'weekNum': '-1',
@@ -121,30 +116,31 @@ def get_today_teachers_rasp(teacher):
 
         if response.status_code == 200:
             html_content = response.text
-            classrooms = parse_classrooms(html_content, teacher)
-            if classrooms != set():
-                print("успех")
+            if "не найдено результатов" in html_content:
+                print("По запросу ", teacher, "не найдено результатов.")
+                return set()
             else:
-                print("пусто")
-            return classrooms
+                rooms = parse_rooms(html_content, teacher)
+                if rooms:
+                    print("успех:", teacher)
+                else:
+                    print("пусто:", teacher)
+                return rooms
         else:
             print(f'Ошибка: {response.status_code}')
 
     except requests.exceptions.SSLError as e:
         print(f"SSL ошибка при подключении: {e}")
-        return []
     except requests.exceptions.ConnectionError as e:
         print(f"Ошибка соединения: {e}")
-        return []
     except requests.exceptions.Timeout:
         print("Таймаут при подключении к серверу")
-        return []
     except Exception as e:
         print(f"Неожиданная ошибка: {e}")
-        return []
+    return set()
 
 
 if __name__ == "__main__":
-    rasp = get_today_teachers_rasp('15.27Д-ПИ03/24б')
+    rasp = get_today_teachers_schedule("15.27Д-ПИ03/24б".lower())
     for pair in rasp:
         print(pair)
