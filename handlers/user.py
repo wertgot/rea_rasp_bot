@@ -1,0 +1,49 @@
+from aiogram import Router, F
+from aiogram.filters import Command
+from aiogram.types import Message
+
+import re
+
+import logging
+
+from lexicon.lexicon import LEXICON_RU
+
+from keyboards.keyboards import main_menu_kb, schedule_analytics_kb
+
+from services.analytics import vacant_rooms
+
+
+user_router = Router()
+
+logger = logging.getLogger(__name__)
+
+@user_router.message(Command(commands="start"))
+async def process_start_command(message: Message):
+    await message.answer(text=LEXICON_RU['/start'], reply_markup=main_menu_kb)
+
+
+@user_router.message(Command(commands="help"))
+async def process_help_command(message: Message):
+    await message.answer(text=LEXICON_RU['/help'])
+
+@user_router.message(F.text == LEXICON_RU["schedule_analytics_btn"])
+async def process_schedule_analytics_btn(message: Message):
+    await message.answer(
+        text=LEXICON_RU["schedule_analytics"],
+        reply_markup=schedule_analytics_kb
+    )
+
+@user_router.message(F.text == LEXICON_RU["empty_rooms_btn"])
+async def process_empty_rooms_btn(message: Message):
+    await message.answer(
+        text=LEXICON_RU["empty_rooms"],
+    )
+
+@user_router.message(F.text.replace(" ", "").regexp(r'^\d+-\d+$'))
+async def process_empty_rooms(message: Message):
+    clear_input = message.text.replace(" ", "")
+    pair_num, corpus = map(int, clear_input.split('-'))
+
+    v_rooms = vacant_rooms(pair_num, corpus)
+
+    await message.answer(', '.join(v_rooms))
