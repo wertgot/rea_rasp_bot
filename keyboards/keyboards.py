@@ -35,5 +35,5 @@ schedule_analytics_kb_builer.row(
 )
 
 schedule_analytics_kb: ReplyKeyboardMarkup = schedule_analytics_kb_builer.as_markup(
-    one_time_keyboard=True, resize_keyboard=True
+   resize_keyboard=True,
 )

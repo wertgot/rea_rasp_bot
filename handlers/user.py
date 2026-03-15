@@ -10,7 +10,7 @@ from lexicon.lexicon import LEXICON_RU
 
 from keyboards.keyboards import main_menu_kb, schedule_analytics_kb
 
-from services.analytics import vacant_rooms
+from services.analytics import vacant_rooms, pairs_num_by_corpuses
 
 
 user_router = Router()
@@ -47,3 +47,10 @@ async def process_empty_rooms(message: Message):
     v_rooms = vacant_rooms(pair_num, corpus)
 
     await message.answer(', '.join(v_rooms))
+
+
+@user_router.message(F.text == LEXICON_RU["pairs_num_by_corpuses_btn"])
+async def process_pairs_num_by_corpuses_btn(message: Message):
+    await message.answer(
+        text=pairs_num_by_corpuses(),
+    )

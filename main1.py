@@ -8,8 +8,6 @@ from aiogram.enums import ParseMode
 
 from handlers.user import user_router
 
-from services.get_today_pairs import get_today_pairs
-
 from keyboards.set_menu import set_main_menu
 
 
@@ -23,8 +21,6 @@ async def main():
         level=logging.getLevelName(config.log.level),
         format=config.log.format,
     )
-
-    logger.info('log just started, yo :3')
 
     bot = Bot(
         token=config.bot.token,

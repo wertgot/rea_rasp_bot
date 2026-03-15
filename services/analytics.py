@@ -1,3 +1,6 @@
+import utils.beautymaker
+
+
 def vacant_rooms(pair_num, corpus) -> list[str]:
     """свободные аудитории по номеру пары и корпуса"""
 
@@ -20,5 +23,18 @@ def vacant_rooms(pair_num, corpus) -> list[str]:
     print(len(pairs), len(rooms))
 
     v_rooms = list(rooms - pairs)
-    v_rooms.sort(key=lambda x: x[-1])
+    v_rooms.sort()
     return v_rooms
+
+
+@utils.beautymaker.pairs_num_by_corpuses_decorator
+def pairs_num_by_corpuses():
+    with open('database/today_pairs_14.03.2026.txt', 'r', encoding='utf-8') as f:
+        today_pairs = eval(f.read())
+
+    p_by_c = {}
+    for pair in today_pairs:
+        p_by_c[pair[1]] = p_by_c.get(pair[1], {})
+        p_by_c[pair[1]][pair[2]] = p_by_c[pair[1]].get(pair[2], 0) + 1
+
+    return p_by_c
