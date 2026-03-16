@@ -19,7 +19,7 @@ main_menu_kb_builer.row(
 )
 
 main_menu_kb: ReplyKeyboardMarkup = main_menu_kb_builer.as_markup(
-    one_time_keyboard=True, resize_keyboard=True
+    resize_keyboard=True,
 )
 
 # меню аналитики расписания

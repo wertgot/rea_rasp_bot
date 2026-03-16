@@ -35,7 +35,7 @@ async def main():
     dp.include_router(user_router)
 
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, polling_timeout=30)
 
 
 if __name__ == "__main__":

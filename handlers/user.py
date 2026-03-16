@@ -43,10 +43,11 @@ async def process_empty_rooms_btn(message: Message):
 async def process_empty_rooms(message: Message):
     clear_input = message.text.replace(" ", "")
     pair_num, corpus = map(int, clear_input.split('-'))
-
-    v_rooms = vacant_rooms(pair_num, corpus)
-
-    await message.answer(', '.join(v_rooms))
+    if pair_num not in range(1, 9) or corpus not in [1,2,3,4,6,8,9]:
+        await message.reply(text="нет такого номера пары или корпуса")
+    else:
+        v_rooms = vacant_rooms(pair_num, corpus)
+        await message.answer(', '.join(v_rooms))
 
 
 @user_router.message(F.text == LEXICON_RU["pairs_num_by_corpuses_btn"])
