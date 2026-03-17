@@ -1,7 +1,7 @@
 import utils.beautymaker
 
 
-def vacant_rooms(pair_num, corpus) -> list[str]:
+def vacant_rooms(pair_num, corpus) -> tuple[list[str], int]:
     """свободные аудитории по номеру пары и корпуса"""
 
     with open('database/today_pairs.txt', 'r', encoding='utf-8') as f:
@@ -22,18 +22,24 @@ def vacant_rooms(pair_num, corpus) -> list[str]:
 
     v_rooms = list(rooms - pairs)
     v_rooms.sort()
+    return v_rooms, len(rooms)
 
-    return v_rooms
 
-
-@utils.beautymaker.pairs_num_by_corpuses_decorator
-def pairs_num_by_corpuses():
+@utils.beautymaker.pairs_num_by_corpuses_decorator # -> str
+def pairs_num_by_corpuses() -> tuple[dict[int, dict[int, int]], int, int]:
     with open('database/today_pairs.txt', 'r', encoding='utf-8') as f:
         today_pairs = eval(f.read())
+    today_pairs = [x[1:] for x in today_pairs]
+    today_pairs = set(today_pairs)
 
     p_by_c = {}
+    p_by_pn = {}
     for pair in today_pairs:
-        p_by_c[pair[1]] = p_by_c.get(pair[1], {})
-        p_by_c[pair[1]][pair[2]] = p_by_c[pair[1]].get(pair[2], 0) + 1
+        p_by_c[pair[0]] = p_by_c.get(pair[0], {})
+        p_by_c[pair[0]][pair[1]] = p_by_c[pair[0]].get(pair[1], 0) + 1
 
-    return p_by_c
+        p_by_pn[pair[0]] = p_by_pn.get(pair[0], 0) + 1
+
+    max_pairs_together = max(p_by_pn.values())
+
+    return p_by_c, len(today_pairs), max_pairs_together
