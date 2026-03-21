@@ -1,14 +1,15 @@
 import utils.beautymaker
+import ast
 
 
 def vacant_rooms(pair_num, corpus) -> tuple[list[str], int]:
     """свободные аудитории по номеру пары и корпуса"""
 
     with open('database/today_pairs.txt', 'r', encoding='utf-8') as f:
-        today_pairs = eval(f.read())
+        today_pairs = ast.literal_eval(f.read())
 
     with open('database/all_rooms.txt', 'r', encoding='utf-8') as f:
-        all_rooms = eval(f.read())
+        all_rooms = ast.literal_eval(f.read())
 
     pairs = set()
     for pair in today_pairs:
@@ -28,7 +29,7 @@ def vacant_rooms(pair_num, corpus) -> tuple[list[str], int]:
 @utils.beautymaker.pairs_num_by_corpuses_decorator # -> str
 def pairs_num_by_corpuses() -> tuple[dict[int, dict[int, int]], int, int]:
     with open('database/today_pairs.txt', 'r', encoding='utf-8') as f:
-        today_pairs = eval(f.read())
+        today_pairs = ast.literal_eval(f.read())
     today_pairs = [x[1:] for x in today_pairs]
     today_pairs = set(today_pairs)
 

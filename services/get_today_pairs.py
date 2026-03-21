@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import re
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import ast
 
 
 def parse_today_pairs(html_content, teacher) -> set[tuple]:
@@ -151,7 +152,7 @@ def get_today_pairs():
     print("=" * 50)
 
     with open("database/teachers.txt", 'r', encoding='utf-8') as f:
-        teachers = eval(f.read())
+        teachers = ast.literal_eval(f.read())
 
     occupied_rooms = set()
 
